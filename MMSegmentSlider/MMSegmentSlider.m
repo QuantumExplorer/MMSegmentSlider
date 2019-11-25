@@ -6,7 +6,7 @@ static CGFloat const BottomOffset = 15.0f;
 @interface MMSegmentSlider ()
 
 @property (nonatomic, strong) CAShapeLayer *sliderLayer;
-@property (nonatomic, strong) CAShapeLayer *circlesLayer;
+@property (nonatomic, strong) CAShapeLayer *stopsLayer;
 @property (nonatomic, strong) CAShapeLayer *selectedLayer;
 @property (nonatomic, strong) CAShapeLayer *labelsLayer;
 
@@ -70,7 +70,7 @@ static CGFloat const BottomOffset = 15.0f;
     _labelColor = [UIColor grayColor];
     
     _textOffset = 30.0f;
-    _circlesRadius = 12.0f;
+    _stopItemHeight = 12.0f;
     _circlesRadiusForSelected = 26.0f;
     
     _selectedItemIndex = 0;
@@ -88,8 +88,8 @@ static CGFloat const BottomOffset = 15.0f;
     self.sliderLayer.lineWidth = 3.0f;
     [self.layer addSublayer:self.sliderLayer];
     
-    self.circlesLayer = [CAShapeLayer layer];
-    [self.layer addSublayer:self.circlesLayer];
+    self.stopsLayer = [CAShapeLayer layer];
+    [self.layer addSublayer:self.stopsLayer];
     
     self.selectedLayer = [CAShapeLayer layer];
     [self.layer addSublayer:self.selectedLayer];
@@ -100,8 +100,13 @@ static CGFloat const BottomOffset = 15.0f;
     self.sliderLayer.strokeColor = self.basicColor.CGColor;
     self.sliderLayer.path = [[self pathForSlider] CGPath];
     
-    self.circlesLayer.fillColor = self.basicColor.CGColor;
-    self.circlesLayer.path = [[self pathForCircles] CGPath];
+    if ([self useCircles]) {
+        self.stopsLayer.fillColor = self.basicColor.CGColor;
+    } else {
+        self.stopsLayer.strokeColor = self.basicColor.CGColor;
+        self.stopsLayer.lineWidth = self.stopItemWidth;
+    }
+    self.stopsLayer.path = [[self pathForStopItems] CGPath];
     
     self.selectedLayer.fillColor = self.selectedValueColor.CGColor;
     self.selectedLayer.path = [[self pathForSelected] CGPath];
@@ -126,30 +131,54 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
     
-    CGFloat lineY = self.bounds.size.height - self.circlesRadius - BottomOffset;
-    [path moveToPoint:CGPointMake(self.circlesRadius + HorizontalInsets, lineY)];
-    [path addLineToPoint:CGPointMake(self.bounds.size.width - self.circlesRadius - HorizontalInsets, lineY)];
+    CGFloat lineY = self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    [path moveToPoint:CGPointMake(self.stopItemWidth + HorizontalInsets, lineY)];
+    [path addLineToPoint:CGPointMake(self.bounds.size.width - self.stopItemWidth - HorizontalInsets, lineY)];
     [path closePath];
     
     return path;
 }
 
-- (UIBezierPath *)pathForCircles
+- (UIBezierPath *)pathForStopItems
+{
+    if ([self useCircles]) {
+        return [self pathForStopCircles];
+    } else {
+        return [self pathForStopLines];
+    }
+}
+
+- (UIBezierPath *)pathForStopLines
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
     
-    CGFloat startPointX = self.circlesRadius + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.circlesRadius + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.size.height - self.circlesRadius - BottomOffset;
+    CGFloat startPointX = self.stopItemWidth + HorizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    
+    for (int i = 0; i < self.values.count; i++) {
+        CGPoint top = CGPointMake(startPointX + i * intervalSize, yPos + self.stopItemHeight/2);
+        CGPoint bottom = CGPointMake(startPointX + i * intervalSize, yPos - self.stopItemHeight/2);
+        [path moveToPoint:top];
+        [path addLineToPoint:bottom];
+        [path closePath];
+    }
+    
+    return path;
+}
+
+- (UIBezierPath *)pathForStopCircles
+{
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    
+    CGFloat startPointX = self.stopItemWidth + HorizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height - self.stopItemHeight - BottomOffset;
     
     for (int i = 0; i < self.values.count; i++) {
         CGPoint center = CGPointMake(startPointX + i * intervalSize, yPos);
-        [path addArcWithCenter:center
-                        radius:self.circlesRadius
-                    startAngle:0
-                      endAngle:2 * M_PI
-                     clockwise:YES];
-        [path closePath];
+        CGRect ovalRect = CGRectMake(center.x - self.stopItemWidth/2, center.y - self.stopItemHeight/2, self.stopItemWidth, self.stopItemHeight);
+        [path appendPath:[UIBezierPath bezierPathWithOvalInRect:ovalRect]];
     }
     
     return path;
@@ -159,9 +188,9 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
 
-    CGFloat startPointX = self.bounds.origin.x + self.circlesRadius + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.circlesRadius + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.circlesRadius - BottomOffset;
+    CGFloat startPointX = self.bounds.origin.x + self.stopItemWidth + HorizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.stopItemHeight - BottomOffset;
     CGPoint center = CGPointMake(startPointX + self.selectedItemIndex * intervalSize, yPos);
 
     [path addArcWithCenter:center
@@ -183,25 +212,46 @@ static CGFloat const BottomOffset = 15.0f;
 
 - (void)drawLabels
 {
-    CGFloat startPointX = self.bounds.origin.x + self.circlesRadius + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.circlesRadius + HorizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat startPointX = self.bounds.origin.x + self.stopItemWidth + HorizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
     
     CGFloat yPos = self.bounds.origin.y + self.bounds.size.height + 5 - self.circlesRadiusForSelected - BottomOffset * 2;
     
     for (int i = 0; i < self.values.count; i++) {
+        if (_hideInnerLabels && (i!=0) && (i!=self.values.count -1)) continue;
         UIColor *textColor = self.selectedItemIndex == i ? self.selectedLabelColor : self.labelColor;
-        
-        [self drawLabel:[self.labels objectAtIndex:i]
-                atPoint:CGPointMake(startPointX + i * intervalSize, yPos - self.circlesRadius - self.textOffset)
-              withColor:textColor];
+        BOOL onRightEdgeWithHiddenInnerLabels = _hideInnerLabels && i && (self.labels.count == 2);
+        BOOL onRightEdge = (i == self.values.count -1);
+        BOOL onLeftEdge = (i == 0);
+        NSTextAlignment alignment = NSTextAlignmentCenter;
+        if (self.frameLabelsToSlider) {
+            if (onRightEdge) {
+                alignment = NSTextAlignmentRight;
+            } else if (onLeftEdge) {
+                alignment = NSTextAlignmentLeft;
+            }
+        }
+        [self drawLabel:[self.labels objectAtIndex:onRightEdgeWithHiddenInnerLabels?1:i]
+                atPoint:CGPointMake(startPointX + i * intervalSize, yPos - self.stopItemHeight - self.textOffset)
+              withColor:textColor withAlignment:alignment];
     }
 }
 
-- (void)drawLabel:(NSString*)label atPoint:(CGPoint)point withColor:(UIColor*)color
+- (void)drawLabel:(NSString*)label atPoint:(CGPoint)point withColor:(UIColor*)color withAlignment:(NSTextAlignment)alignment;
 {
     NSMutableParagraphStyle* textStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-    textStyle.alignment = NSTextAlignmentCenter;
-    [label drawInRect:CGRectMake(point.x - 40, point.y - 10, 70, 60)
+    textStyle.alignment = alignment;
+    CGRect boundingRect = [label boundingRectWithSize:self.bounds.size options:NSStringDrawingUsesLineFragmentOrigin| NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:self.labelsFont} context:nil];
+    CGRect rect;
+    static const uint32_t LABEL_MARGIN = 5;
+    if (alignment == NSTextAlignmentLeft) {
+        rect = CGRectMake(point.x - LABEL_MARGIN, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+    } else if (alignment == NSTextAlignmentRight) {
+        rect = CGRectMake(point.x - boundingRect.size.width, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+    } else {
+        rect = CGRectMake(point.x - boundingRect.size.width/2, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+    }
+    [label drawInRect:rect
        withAttributes:@{
                         NSFontAttributeName: self.labelsFont,
                         NSForegroundColorAttributeName: color,
@@ -242,15 +292,15 @@ static CGFloat const BottomOffset = 15.0f;
 
 - (NSInteger)indexForTouchPoint:(CGPoint)point
 {
-    CGFloat startPointX = self.bounds.origin.x + self.circlesRadius + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.circlesRadius + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.circlesRadius - BottomOffset;
+    CGFloat startPointX = self.bounds.origin.x + self.stopItemHeight + HorizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemHeight + HorizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.stopItemHeight - BottomOffset;
     
     NSInteger approximateIndex = round((point.x - startPointX) / intervalSize);
     CGFloat xAccuracy = fabs(point.x - (startPointX + approximateIndex * intervalSize));
     CGFloat yAccuracy = fabs(yPos - point.y);
     
-    if (xAccuracy > self.circlesRadius * 2.4f || yAccuracy > self.bounds.size.height * 0.8f) {
+    if (xAccuracy > self.stopItemHeight * 2.4f || yAccuracy > self.bounds.size.height * 0.8f) {
         return -1;
     }
     
@@ -290,7 +340,7 @@ static CGFloat const BottomOffset = 15.0f;
     [self setNeedsDisplay];
 }
 
-- (NSObject *)currentValue
+- (id<NSCopying>)currentValue
 {
     return [self.values objectAtIndex:self.selectedItemIndex];
 }

@@ -28,9 +28,19 @@ IB_DESIGNABLE
 @property (nonatomic, strong) IBInspectable UIColor *selectedLabelColor;
 
 /**
- * Circles radius
+ * Use circular stop points
  */
-@property (nonatomic) IBInspectable CGFloat circlesRadius;
+@property (nonatomic) IBInspectable BOOL useCircles;
+
+/**
+ * Item radius or height
+ */
+@property (nonatomic) IBInspectable CGFloat stopItemHeight;
+
+/**
+ * Item radius or height
+ */
+@property (nonatomic) IBInspectable CGFloat stopItemWidth;
 
 /**
  * Circles radius for the selected item.
@@ -50,17 +60,27 @@ IB_DESIGNABLE
 /**
  * Contains NSNumber values
  */
-@property (nonatomic, strong) NSArray *values;
+@property (nonatomic, strong) NSArray<id<NSCopying>> *values;
 
 /**
  * Contains NSString labels
  */
-@property (nonatomic, strong) NSArray *labels;
+@property (nonatomic, strong) NSArray<NSString*> *labels;
+
+/**
+ * Hide text for inner labels
+ */
+@property (nonatomic) IBInspectable BOOL hideInnerLabels;
+
+/**
+ * Hide text for inner labels
+ */
+@property (nonatomic) IBInspectable BOOL frameLabelsToSlider;
 
 /**
  * Set/get current selected value
  */
-@property (nonatomic, readonly) NSObject *currentValue;
+@property (nonatomic, readonly) id<NSCopying> currentValue;
 
 /**
  * Set/get selected item index
