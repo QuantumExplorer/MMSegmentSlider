@@ -13,19 +13,9 @@ IB_DESIGNABLE
 @property (nonatomic, strong) IBInspectable UIColor *basicColor;
 
 /**
- *  Basic labels color
- */
-@property (nonatomic, strong) IBInspectable UIColor *labelColor;
-
-/**
  * Selected value color
  */
 @property (nonatomic, strong) IBInspectable UIColor *selectedValueColor;
-
-/**
- * Color of selected label
- */
-@property (nonatomic, strong) IBInspectable UIColor *selectedLabelColor;
 
 /**
  * Use circular stop points
@@ -47,35 +37,13 @@ IB_DESIGNABLE
  */
 @property (nonatomic) IBInspectable CGFloat circlesRadiusForSelected;
 
-/**
- * Text offset from the circle
- */
-@property (nonatomic) IBInspectable CGFloat textOffset;
-
-/**
- * Font for labels
- */
-@property (nonatomic, strong) UIFont *labelsFont;
+@property (nonatomic) IBInspectable CGFloat horizontalInsets;
+@property (nonatomic) IBInspectable CGFloat sliderWidth;
 
 /**
  * Contains NSNumber values
  */
 @property (nonatomic, strong) NSArray<id<NSCopying>> *values;
-
-/**
- * Contains NSString labels
- */
-@property (nonatomic, strong) NSArray<NSString*> *labels;
-
-/**
- * Hide text for inner labels
- */
-@property (nonatomic) IBInspectable BOOL hideInnerLabels;
-
-/**
- * Hide text for inner labels
- */
-@property (nonatomic) IBInspectable BOOL frameLabelsToSlider;
 
 /**
  * Set/get current selected value

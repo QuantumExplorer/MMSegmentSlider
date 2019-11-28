@@ -1,14 +1,10 @@
 #import "MMSegmentSlider.h"
 
-static CGFloat const HorizontalInsets = 45.0f;
-static CGFloat const BottomOffset = 15.0f;
-
 @interface MMSegmentSlider ()
 
 @property (nonatomic, strong) CAShapeLayer *sliderLayer;
 @property (nonatomic, strong) CAShapeLayer *stopsLayer;
 @property (nonatomic, strong) CAShapeLayer *selectedLayer;
-@property (nonatomic, strong) CAShapeLayer *labelsLayer;
 
 @end
 
@@ -19,6 +15,7 @@ static CGFloat const BottomOffset = 15.0f;
     self = [super init];
     if (self) {
         [self setupProperties];
+        [self setupLayers];
     }
     
     return self;
@@ -39,6 +36,7 @@ static CGFloat const BottomOffset = 15.0f;
     self = [super initWithFrame:frame];
     if (self) {
         [self setupProperties];
+        [self setupLayers];
     }
     
     return self;
@@ -53,31 +51,27 @@ static CGFloat const BottomOffset = 15.0f;
 
 - (void)prepareForInterfaceBuilder
 {
+    [super prepareForInterfaceBuilder];
     [self setupLayers];
 }
 
 - (void)layoutSubviews
 {
+    [super layoutSubviews];
     [self updateLayers];
-    [self setNeedsDisplay];
 }
 
 - (void)setupProperties
 {
     _basicColor = [UIColor colorWithWhite:0.7f alpha:1.0f];
     _selectedValueColor = [UIColor blackColor];
-    _selectedLabelColor = [UIColor blackColor];
-    _labelColor = [UIColor grayColor];
     
-    _textOffset = 30.0f;
     _stopItemHeight = 12.0f;
     _circlesRadiusForSelected = 26.0f;
+    _sliderWidth = 1.0;
     
     _selectedItemIndex = 0;
     _values = @[@0, @1, @2];
-    _labels = @[@"item 0", @"item 1", @"item 2"];
-    
-    _labelsFont = [UIFont fontWithName:@"Helvetica-Light" size:16.0f];
 }
 
 #pragma mark - Shape Layers
@@ -85,7 +79,6 @@ static CGFloat const BottomOffset = 15.0f;
 - (void)setupLayers
 {
     self.sliderLayer = [CAShapeLayer layer];
-    self.sliderLayer.lineWidth = 3.0f;
     [self.layer addSublayer:self.sliderLayer];
     
     self.stopsLayer = [CAShapeLayer layer];
@@ -99,6 +92,7 @@ static CGFloat const BottomOffset = 15.0f;
 {
     self.sliderLayer.strokeColor = self.basicColor.CGColor;
     self.sliderLayer.path = [[self pathForSlider] CGPath];
+    self.sliderLayer.lineWidth = self.sliderWidth;
     
     if ([self useCircles]) {
         self.stopsLayer.fillColor = self.basicColor.CGColor;
@@ -131,9 +125,9 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
     
-    CGFloat lineY = self.bounds.size.height - self.stopItemHeight - BottomOffset;
-    [path moveToPoint:CGPointMake(self.stopItemWidth + HorizontalInsets, lineY)];
-    [path addLineToPoint:CGPointMake(self.bounds.size.width - self.stopItemWidth - HorizontalInsets, lineY)];
+    CGFloat lineY = self.bounds.size.height / 2.0;
+    [path moveToPoint:CGPointMake(self.stopItemWidth + self.horizontalInsets, lineY)];
+    [path addLineToPoint:CGPointMake(self.bounds.size.width - self.stopItemWidth - self.horizontalInsets, lineY)];
     [path closePath];
     
     return path;
@@ -152,9 +146,9 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
     
-    CGFloat startPointX = self.stopItemWidth + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    CGFloat startPointX = self.stopItemWidth + self.horizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + self.horizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height / 2.0;
     
     for (int i = 0; i < self.values.count; i++) {
         CGPoint top = CGPointMake(startPointX + i * intervalSize, yPos + self.stopItemHeight/2);
@@ -171,9 +165,9 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
     
-    CGFloat startPointX = self.stopItemWidth + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    CGFloat startPointX = self.stopItemWidth + self.horizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + self.horizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height / 2.0;
     
     for (int i = 0; i < self.values.count; i++) {
         CGPoint center = CGPointMake(startPointX + i * intervalSize, yPos);
@@ -188,9 +182,9 @@ static CGFloat const BottomOffset = 15.0f;
 {
     UIBezierPath *path = [UIBezierPath bezierPath];
 
-    CGFloat startPointX = self.bounds.origin.x + self.stopItemWidth + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    CGFloat startPointX = self.bounds.origin.x + self.stopItemWidth + self.horizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + self.horizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height / 2.0;
     CGPoint center = CGPointMake(startPointX + self.selectedItemIndex * intervalSize, yPos);
 
     [path addArcWithCenter:center
@@ -201,62 +195,6 @@ static CGFloat const BottomOffset = 15.0f;
     [path closePath];
 
     return path;
-}
-
-#pragma mark - UIView drawing
-
-- (void)drawRect:(CGRect)rect
-{
-    [self drawLabels];
-}
-
-- (void)drawLabels
-{
-    CGFloat startPointX = self.bounds.origin.x + self.stopItemWidth + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemWidth + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    
-    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height + 5 - self.circlesRadiusForSelected - BottomOffset * 2;
-    
-    for (int i = 0; i < self.values.count; i++) {
-        if (_hideInnerLabels && (i!=0) && (i!=self.values.count -1)) continue;
-        UIColor *textColor = self.selectedItemIndex == i ? self.selectedLabelColor : self.labelColor;
-        BOOL onRightEdgeWithHiddenInnerLabels = _hideInnerLabels && i && (self.labels.count == 2);
-        BOOL onRightEdge = (i == self.values.count -1);
-        BOOL onLeftEdge = (i == 0);
-        NSTextAlignment alignment = NSTextAlignmentCenter;
-        if (self.frameLabelsToSlider) {
-            if (onRightEdge) {
-                alignment = NSTextAlignmentRight;
-            } else if (onLeftEdge) {
-                alignment = NSTextAlignmentLeft;
-            }
-        }
-        [self drawLabel:[self.labels objectAtIndex:onRightEdgeWithHiddenInnerLabels?1:i]
-                atPoint:CGPointMake(startPointX + i * intervalSize, yPos - self.stopItemHeight - self.textOffset)
-              withColor:textColor withAlignment:alignment];
-    }
-}
-
-- (void)drawLabel:(NSString*)label atPoint:(CGPoint)point withColor:(UIColor*)color withAlignment:(NSTextAlignment)alignment;
-{
-    NSMutableParagraphStyle* textStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
-    textStyle.alignment = alignment;
-    CGRect boundingRect = [label boundingRectWithSize:self.bounds.size options:NSStringDrawingUsesLineFragmentOrigin| NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:self.labelsFont} context:nil];
-    CGRect rect;
-    static const uint32_t LABEL_MARGIN = 5;
-    if (alignment == NSTextAlignmentLeft) {
-        rect = CGRectMake(point.x - LABEL_MARGIN, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
-    } else if (alignment == NSTextAlignmentRight) {
-        rect = CGRectMake(point.x - boundingRect.size.width, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
-    } else {
-        rect = CGRectMake(point.x - boundingRect.size.width/2, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
-    }
-    [label drawInRect:rect
-       withAttributes:@{
-                        NSFontAttributeName: self.labelsFont,
-                        NSForegroundColorAttributeName: color,
-                        NSParagraphStyleAttributeName: textStyle
-                        }];
 }
 
 #pragma mark - Touch handlers
@@ -292,9 +230,9 @@ static CGFloat const BottomOffset = 15.0f;
 
 - (NSInteger)indexForTouchPoint:(CGPoint)point
 {
-    CGFloat startPointX = self.bounds.origin.x + self.stopItemHeight + HorizontalInsets;
-    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemHeight + HorizontalInsets) * 2.0) / (self.values.count - 1);
-    CGFloat yPos = self.bounds.origin.y + self.bounds.size.height - self.stopItemHeight - BottomOffset;
+    CGFloat startPointX = self.bounds.origin.x + self.stopItemHeight + self.horizontalInsets;
+    CGFloat intervalSize = (self.bounds.size.width - (self.stopItemHeight + self.horizontalInsets) * 2.0) / (self.values.count - 1);
+    CGFloat yPos = self.bounds.size.height / 2.0;
     
     NSInteger approximateIndex = round((point.x - startPointX) / intervalSize);
     CGFloat xAccuracy = fabs(point.x - (startPointX + approximateIndex * intervalSize));
@@ -314,7 +252,6 @@ static CGFloat const BottomOffset = 15.0f;
     _values = values;
     self.selectedItemIndex = 0;
 
-    [self setNeedsDisplay];
     [self setNeedsLayout];
 }
 
@@ -323,7 +260,6 @@ static CGFloat const BottomOffset = 15.0f;
     _selectedItemIndex = selectedItemIndex;
     
     [self updateLayers];
-    [self setNeedsDisplay];
 }
 
 - (void)setSelectedItemIndex:(NSInteger)selectedItemIndex animated:(BOOL)animated
@@ -336,8 +272,6 @@ static CGFloat const BottomOffset = 15.0f;
     else {
         [self updateLayers];
     }
-    
-    [self setNeedsDisplay];
 }
 
 - (id<NSCopying>)currentValue
@@ -345,40 +279,5 @@ static CGFloat const BottomOffset = 15.0f;
     return [self.values objectAtIndex:self.selectedItemIndex];
 }
 
-#pragma mark - UIAccessibility
-
-- (BOOL)isAccessibilityElement
-{
-    return YES;
-}
-
-- (NSString *)accessibilityLabel
-{
-    if (_selectedItemIndex < self.labels.count) {
-        return self.labels[_selectedItemIndex];
-    }
-    else {
-        return nil;
-    }
-}
-
-- (UIAccessibilityTraits)accessibilityTraits
-{
-    return UIAccessibilityTraitSelected | UIAccessibilityTraitAdjustable | UIAccessibilityTraitSummaryElement;
-}
-
-- (void)accessibilityIncrement
-{
-    if (_selectedItemIndex < self.labels.count - 1) {
-        [self setSelectedItemIndex:_selectedItemIndex+1 animated:YES];
-    }
-}
-
-- (void)accessibilityDecrement
-{
-    if (_selectedItemIndex > 0) {
-        [self setSelectedItemIndex:_selectedItemIndex-1 animated:YES];
-    }
-}
 
 @end

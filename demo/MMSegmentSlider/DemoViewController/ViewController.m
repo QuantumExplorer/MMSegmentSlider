@@ -15,8 +15,6 @@
     [super viewDidLoad];
     
     self.segmentSlider.values = @[@"$19", @"$99", @"$199", @"$299"];
-    self.segmentSlider.labels = @[@"1 month", @"6 months", @"1 year", @"2 years"];
-    self.segmentSlider.labelsFont = [UIFont fontWithName:@"HelveticaNeue-Light" size:14.0f];
     
     [self.segmentSlider addTarget:self action:@selector(sliderValueChanged) forControlEvents:UIControlEventValueChanged];
     [self updatePriceLabel];
