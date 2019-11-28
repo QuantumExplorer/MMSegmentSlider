@@ -20,17 +20,17 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jfv-uU-sMl" customClass="MMSegmentSlider">
-                                <rect key="frame" x="20" y="752" width="374" height="90"/>
+                                <rect key="frame" x="20" y="642" width="374" height="200"/>
                                 <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="90" id="lYp-1j-f4d"/>
+                                    <constraint firstAttribute="height" constant="200" id="lYp-1j-f4d"/>
                                 </constraints>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="basicColor">
                                         <color key="value" red="0.86120820045471191" green="0.86120820045471191" blue="0.86120820045471191" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </userDefinedRuntimeAttribute>
                                     <userDefinedRuntimeAttribute type="color" keyPath="selectedValueColor">
-                                        <color key="value" systemColor="systemBlueColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <color key="value" systemColor="systemBlueColor" red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                     </userDefinedRuntimeAttribute>
                                     <userDefinedRuntimeAttribute type="color" keyPath="selectedLabelColor">
                                         <color key="value" red="0.0039215686269999999" green="0.87450980389999999" blue="0.87450980389999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -64,24 +64,67 @@
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="6bA-0U-4Ew" customClass="MMSegmentSlider">
+                                <rect key="frame" x="20" y="542" width="374" height="90"/>
+                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="90" id="AjD-OU-boE"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="basicColor">
+                                        <color key="value" red="0.86120820050000002" green="0.86120820050000002" blue="0.86120820050000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="selectedValueColor">
+                                        <color key="value" systemColor="systemBlueColor" red="0.0" green="0.47843137254901963" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="color" keyPath="selectedLabelColor">
+                                        <color key="value" red="0.0039215686269999999" green="0.87450980389999999" blue="0.87450980389999999" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="textOffset">
+                                        <integer key="value" value="20"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="circlesRadius">
+                                        <real key="value" value="7"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="circlesRadiusForSelected">
+                                        <real key="value" value="13"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="useCircles" value="NO"/>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="stopItemRadius">
+                                        <real key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="stopItemHeight">
+                                        <real key="value" value="21"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="stopItemWidth">
+                                        <real key="value" value="2"/>
+                                    </userDefinedRuntimeAttribute>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="hideInnerLabels" value="NO"/>
+                                    <userDefinedRuntimeAttribute type="boolean" keyPath="frameLabelsToSlider" value="NO"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="jfv-uU-sMl" secondAttribute="bottom" constant="20" id="1th-Dh-5nX"/>
                             <constraint firstItem="jfv-uU-sMl" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="7Vq-X6-Qtm"/>
+                            <constraint firstAttribute="trailing" secondItem="6bA-0U-4Ew" secondAttribute="trailing" constant="20" id="GKp-xt-CJM"/>
+                            <constraint firstItem="6bA-0U-4Ew" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" id="GUO-tK-2si"/>
                             <constraint firstItem="04G-Bh-sUb" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Ite-0D-jKU"/>
                             <constraint firstItem="04G-Bh-sUb" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gFo-m4-hKH"/>
+                            <constraint firstItem="jfv-uU-sMl" firstAttribute="top" secondItem="6bA-0U-4Ew" secondAttribute="bottom" constant="10" id="k8K-Et-7BQ"/>
                             <constraint firstItem="jfv-uU-sMl" firstAttribute="trailing" secondItem="8bC-Xf-vdC" secondAttribute="trailingMargin" id="muL-1b-zQ2"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="fontSlider" destination="6bA-0U-4Ew" id="864-rP-4Bw"/>
                         <outlet property="priceLabel" destination="04G-Bh-sUb" id="VBx-td-lIa"/>
                         <outlet property="segmentSlider" destination="jfv-uU-sMl" id="hLC-hA-OBO"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="305" y="418"/>
+            <point key="canvasLocation" x="304.34782608695656" y="417.85714285714283"/>
         </scene>
     </scenes>
 </document>

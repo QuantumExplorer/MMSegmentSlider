@@ -68,6 +68,11 @@ IB_DESIGNABLE
 @property (nonatomic, strong) NSArray<NSString*> *labels;
 
 /**
+ * Contains NSString labels
+ */
+@property (nonatomic, strong) NSArray<NSAttributedString*> *attributedLabels;
+
+/**
  * Hide text for inner labels
  */
 @property (nonatomic) IBInspectable BOOL hideInnerLabels;
@@ -76,6 +81,11 @@ IB_DESIGNABLE
  * Hide text for inner labels
  */
 @property (nonatomic) IBInspectable BOOL frameLabelsToSlider;
+
+/**
+ * Hide text for inner labels
+ */
+@property (nonatomic) IBInspectable BOOL shrinkFontToFitBounds;
 
 /**
  * Set/get current selected value

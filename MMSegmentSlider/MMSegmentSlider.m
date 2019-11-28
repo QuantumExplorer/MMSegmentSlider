@@ -9,6 +9,7 @@ static CGFloat const BottomOffset = 15.0f;
 @property (nonatomic, strong) CAShapeLayer *stopsLayer;
 @property (nonatomic, strong) CAShapeLayer *selectedLayer;
 @property (nonatomic, strong) CAShapeLayer *labelsLayer;
+@property (nonatomic, assign) NSUInteger fontSizeReduction;
 
 @end
 
@@ -74,8 +75,10 @@ static CGFloat const BottomOffset = 15.0f;
     _circlesRadiusForSelected = 26.0f;
     
     _selectedItemIndex = 0;
+    _shrinkFontToFitBounds = YES;
     _values = @[@0, @1, @2];
     _labels = @[@"item 0", @"item 1", @"item 2"];
+    _fontSizeReduction = 0;
     
     _labelsFont = [UIFont fontWithName:@"Helvetica-Light" size:16.0f];
 }
@@ -217,6 +220,14 @@ static CGFloat const BottomOffset = 15.0f;
     
     CGFloat yPos = self.bounds.origin.y + self.bounds.size.height + 5 - self.circlesRadiusForSelected - BottomOffset * 2;
     
+    NSMutableArray * boundsArray = [NSMutableArray array];
+    NSMutableArray * correctedBoundsArray = [NSMutableArray array];
+    NSMutableArray * attributedStringArray = [NSMutableArray array];
+    
+    NSUInteger totalNeededBounds = 0;
+    NSUInteger startX = 0;
+    NSUInteger endX = 0;
+    
     for (int i = 0; i < self.values.count; i++) {
         if (_hideInnerLabels && (i!=0) && (i!=self.values.count -1)) continue;
         UIColor *textColor = self.selectedItemIndex == i ? self.selectedLabelColor : self.labelColor;
@@ -231,32 +242,100 @@ static CGFloat const BottomOffset = 15.0f;
                 alignment = NSTextAlignmentLeft;
             }
         }
-        [self drawLabel:[self.labels objectAtIndex:onRightEdgeWithHiddenInnerLabels?1:i]
-                atPoint:CGPointMake(startPointX + i * intervalSize, yPos - self.stopItemHeight - self.textOffset)
-              withColor:textColor withAlignment:alignment];
+        NSAttributedString * attributedString = nil;
+        if (self.attributedLabels.count) {
+            NSMutableAttributedString * mutableAttributedString = [[NSMutableAttributedString alloc] initWithAttributedString:[self.attributedLabels objectAtIndex:onRightEdgeWithHiddenInnerLabels?1:i]];
+            
+            [mutableAttributedString beginEditing];
+
+            [mutableAttributedString enumerateAttribute:NSFontAttributeName inRange:NSMakeRange(0, attributedString.length) options:0 usingBlock:^(id value, NSRange range, BOOL *stop) {
+
+                UIFont* oldFont = value;
+                UIFont* font = [oldFont fontWithSize:oldFont.pointSize - self.fontSizeReduction];
+
+                [mutableAttributedString removeAttribute:NSFontAttributeName range:range];
+                [mutableAttributedString addAttribute:NSFontAttributeName value:font range:range];
+            }];
+
+            [mutableAttributedString endEditing];
+            attributedString = [mutableAttributedString copy];
+        } else {
+            NSString * string = [self.labels objectAtIndex:onRightEdgeWithHiddenInnerLabels?1:i];
+            NSMutableParagraphStyle* textStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+            textStyle.alignment = alignment;
+            UIFont * font = [self.labelsFont fontWithSize:self.labelsFont.pointSize - self.fontSizeReduction];
+            attributedString = [[NSAttributedString alloc] initWithString:string attributes:@{
+                                    NSFontAttributeName: font,
+                                    NSForegroundColorAttributeName: self.labelColor,
+                                    NSParagraphStyleAttributeName: textStyle
+            }];
+        }
+        CGRect bounds = [self boundingRectForAttributedLabel:attributedString
+          atPoint:CGPointMake(startPointX + i * intervalSize, yPos - self.textOffset)
+        withColor:textColor withAlignment:alignment];
+        [boundsArray addObject:[NSValue valueWithCGRect:bounds]];
+        [attributedStringArray addObject:attributedString];
+        totalNeededBounds += bounds.size.width;
+        totalNeededBounds += 10;
+        if (i == 0) {
+            startX = bounds.origin.x;
+        }
+        if (i == self.values.count - 1) {
+            endX = bounds.origin.x + bounds.size.width;
+        }
+    }
+    
+    totalNeededBounds -= 10;
+    NSUInteger totalUsedBounds = endX - startX;
+    
+    //make sure bounds don't overlap
+    
+    if (totalNeededBounds > totalUsedBounds) {
+        //we have an overlap we need to fix
+        if (self.shrinkFontToFitBounds && totalNeededBounds > self.bounds.size.width && self.fontSizeReduction < 128) {
+            self.fontSizeReduction++;
+            [self drawLabels];
+            return;
+        }
+        //first calculate extra size needed
+        //NSUInteger extraBoundsNeeded = totalNeededBounds - totalUsedBounds;
+        NSInteger start = self.bounds.size.width/2 - totalNeededBounds/2;
+        for (int i = 0; i<boundsArray.count; i++) {
+            CGRect bounds = [[boundsArray objectAtIndex:i] CGRectValue];
+            CGRect correctedBounds = CGRectMake(start, bounds.origin.y, bounds.size.width, bounds.size.height);
+            [correctedBoundsArray addObject:[NSValue valueWithCGRect:correctedBounds]];
+            start += bounds.size.width + 10;
+        }
+    } else {
+        //all is good
+        correctedBoundsArray = boundsArray;
+    }
+    
+
+    
+    int i = 0;
+    
+    for (NSAttributedString * attributedString in attributedStringArray) {
+        CGRect bounds = [[correctedBoundsArray objectAtIndex:i] CGRectValue];
+        [attributedString drawInRect:bounds];
+        i++;
     }
 }
 
-- (void)drawLabel:(NSString*)label atPoint:(CGPoint)point withColor:(UIColor*)color withAlignment:(NSTextAlignment)alignment;
-{
+-(CGRect)boundingRectForAttributedLabel:(NSAttributedString*)label atPoint:(CGPoint)point withColor:(UIColor*)color withAlignment:(NSTextAlignment)alignment {
     NSMutableParagraphStyle* textStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
     textStyle.alignment = alignment;
-    CGRect boundingRect = [label boundingRectWithSize:self.bounds.size options:NSStringDrawingUsesLineFragmentOrigin| NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:self.labelsFont} context:nil];
+    CGRect boundingRect = [label boundingRectWithSize:self.bounds.size options:NSStringDrawingUsesLineFragmentOrigin| NSStringDrawingUsesFontLeading context:nil];
     CGRect rect;
     static const uint32_t LABEL_MARGIN = 5;
     if (alignment == NSTextAlignmentLeft) {
-        rect = CGRectMake(point.x - LABEL_MARGIN, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+        rect = CGRectMake(point.x - LABEL_MARGIN - boundingRect.size.width/5, point.y - LABEL_MARGIN - boundingRect.size.height, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
     } else if (alignment == NSTextAlignmentRight) {
-        rect = CGRectMake(point.x - boundingRect.size.width, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+        rect = CGRectMake(point.x - 4*boundingRect.size.width/5 - LABEL_MARGIN, point.y - LABEL_MARGIN - boundingRect.size.height, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
     } else {
-        rect = CGRectMake(point.x - boundingRect.size.width/2, point.y - LABEL_MARGIN, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
+        rect = CGRectMake(point.x - boundingRect.size.width/2, point.y - LABEL_MARGIN - boundingRect.size.height, boundingRect.size.width + LABEL_MARGIN, boundingRect.size.height + LABEL_MARGIN);
     }
-    [label drawInRect:rect
-       withAttributes:@{
-                        NSFontAttributeName: self.labelsFont,
-                        NSForegroundColorAttributeName: color,
-                        NSParagraphStyleAttributeName: textStyle
-                        }];
+    return rect;
 }
 
 #pragma mark - Touch handlers
@@ -316,6 +395,21 @@ static CGFloat const BottomOffset = 15.0f;
 
     [self setNeedsDisplay];
     [self setNeedsLayout];
+}
+
+-(void)setLabelsFont:(UIFont *)labelsFont {
+    _labelsFont = labelsFont;
+    _fontSizeReduction = 0;
+}
+
+-(void)setAttributedLabels:(NSArray<NSAttributedString *> *)attributedLabels {
+    _attributedLabels = attributedLabels;
+    _fontSizeReduction = 0;
+}
+
+-(void)setLabels:(NSArray<NSString *> *)labels {
+    _labels = labels;
+    _fontSizeReduction = 0;
 }
 
 - (void)setSelectedItemIndex:(NSInteger)selectedItemIndex
